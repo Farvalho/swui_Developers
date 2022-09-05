@@ -9,13 +9,17 @@ import SwiftUI
 
 struct CardView: View {
     
-    var card: Card
+    @State private var fadeIn: Bool = false
+    @State private var moveDownward: Bool = false
+    @State private var moveUpward: Bool = false
+    @State private var showAlert: Bool = false
     
-    var gradient: [Color] = [Color("Color01"), Color("Color02")]
+    var card: Card
     
     var body: some View {
         ZStack {
             Image(card.imageName)
+                .opacity(fadeIn ? 1.0 : 0.0)
             
             VStack {
                 Text(card.title)
@@ -30,10 +34,13 @@ struct CardView: View {
                     .italic()
                 
             } //: VStack
-            .offset(y: -218)
+            .offset(y: moveDownward ? -218 : -300)
             
             Button(action: {
-                print("Button was tapped")
+                // this makes my headphones glitch!!
+                //playSound(sound: "sound-chime", type: "mp3")
+                feedbackGenerator.impactOccurred()
+                showAlert.toggle()
                 
             }, label: {
                 HStack {
@@ -54,13 +61,29 @@ struct CardView: View {
                 .shadow(color: Color("ColorShadow"), radius: 6, x: 0, y: 3)
                 
             })
-            .offset(y: 210)
+            .offset(y: moveUpward ? 210 : 330)
             
         } //: ZStack
         .frame(width: 335, height: 545)
         .background(LinearGradient(gradient: Gradient(colors: card.gradientColors), startPoint: .top, endPoint: .bottom))
         .cornerRadius(16)
         .shadow(radius: 8)
+        .alert(card.title, isPresented: $showAlert, actions: {
+            Button("Confirm") {}
+            
+        }, message: {
+            Text(card.message)
+        })
+        .onAppear() {
+            withAnimation(.linear(duration: 1.2)) {
+                fadeIn.toggle()
+            }
+            
+            withAnimation(.linear(duration: 0.8)) {
+                moveDownward.toggle()
+                moveUpward.toggle()
+            }
+        }
     }
 }
 
